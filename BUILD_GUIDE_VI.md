@@ -163,7 +163,7 @@ fn hello_world() -> String {
 
 ```typescript
 async function showHelloWorld() {
-  helloWorldMsg.value = await invoke("hello_world");
+  helloWorldMsg.value = await invoke('hello_world')
 }
 ```
 
