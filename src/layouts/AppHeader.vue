@@ -5,8 +5,8 @@
     <div class="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
       <SidebarTrigger class="-ml-1" />
       <Separator orientation="vertical" class="mx-2 data-[orientation=vertical]:h-4" />
-      <h1 class="text-base font-medium">Documents</h1>
-      <div class="ml-auto flex items-center gap-2">
+      <h1 class="text-base font-medium">All Status</h1>
+      <!-- <div class="ml-auto flex items-center gap-2">
         <Button variant="ghost" as-child size="sm" class="hidden sm:flex">
           <a
             href="https://github.com/shadcn-ui/ui/tree/main/apps/v4/app/(examples)/dashboard"
@@ -17,13 +17,12 @@
             GitHub
           </a>
         </Button>
-      </div>
+      </div> -->
     </div>
   </header>
 </template>
 
 <script lang="ts" setup>
-import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 </script>

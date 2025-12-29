@@ -23,7 +23,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 
-import { LucideLayoutDashboard as IconDashboard } from 'lucide-vue-next'
+import { LucideLayoutDashboard, Database, Server, DatabaseZap } from 'lucide-vue-next'
 
 interface NavItem {
   title: string
@@ -33,9 +33,24 @@ interface NavItem {
 
 const items = ref<Array<NavItem>>([
   {
-    title: 'Dashboard',
+    title: 'Web Server',
     url: '#',
-    icon: IconDashboard,
+    icon: Server,
+  },
+  {
+    title: 'PHP Versions',
+    url: '#',
+    icon: LucideLayoutDashboard,
+  },
+  {
+    title: 'Databases',
+    url: '#',
+    icon: Database,
+  },
+  {
+    title: 'Cache',
+    url: '#',
+    icon: DatabaseZap,
   },
 ])
 </script>

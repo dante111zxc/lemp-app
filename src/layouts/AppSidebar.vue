@@ -13,10 +13,23 @@
       </SidebarMenu>
     </SidebarHeader>
     <SidebarContent>
-      <div>12312312</div>
+      <AppNavMain />
     </SidebarContent>
     <SidebarFooter>
-      <div>12312312</div>
+      <SidebarGroup>
+        <SidebarGroupContent class="flex flex-col gap-2">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <Button class="w-full" variant="destructive">
+                  <CirclePause :size="40" />
+                  <span>Stop All</span></Button
+                >
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
     </SidebarFooter>
   </Sidebar>
 </template>
@@ -31,5 +44,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { SettingsIcon } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import { SettingsIcon, CirclePause } from 'lucide-vue-next'
+import AppNavMain from '@/components/AppNavMain.vue'
 </script>
