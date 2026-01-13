@@ -12,11 +12,13 @@
   "app": {
     "windows": [
       {
-        "title": "tauri-app",
-        "width": 500,
-        "height": 475,
-        "resizable": false,
-        "maximizable": false
+        "title": "Service Manager",
+        "width": 800,
+        "height": 600,
+        "resizable": true,
+        "maximizable": true,
+        "minWidth": 700,
+        "minHeight": 500
       }
     ],
     "security": {
