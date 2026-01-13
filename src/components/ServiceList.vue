@@ -30,23 +30,14 @@ const services = ref<Service[]>([
     version: '1.24.0',
   },
   {
-    id: 'php-fpm',
-    name: 'php-fpm',
-    displayName: 'PHP-FPM',
-    description: 'PHP FastCGI Process Manager',
+    id: 'php',
+    name: 'php',
+    displayName: 'PHP',
+    description: 'PHP-FPM & CLI for web and command line',
     status: EnumServiceStatus.ACTIVE,
     port: 9000,
     autoStart: true,
-    version: '8.3.0',
-  },
-  {
-    id: 'php-cli',
-    name: 'php-cli',
-    displayName: 'PHP CLI',
-    description: 'PHP Command Line Interface',
-    status: EnumServiceStatus.ACTIVE,
-    autoStart: true,
-    version: '8.3.0',
+    version: '8.3',
   },
   {
     id: 'mysql',
@@ -56,7 +47,7 @@ const services = ref<Service[]>([
     status: EnumServiceStatus.ACTIVE,
     port: 3306,
     autoStart: true,
-    version: '8.0.35',
+    version: '8.0',
   },
   {
     id: 'redis',
@@ -87,6 +78,15 @@ const services = ref<Service[]>([
     port: 9001,
     autoStart: true,
     version: '4.2.5',
+  },
+  {
+    id: 'memcached',
+    name: 'memcached',
+    displayName: 'Memcached',
+    description: 'Distributed memory caching system',
+    status: EnumServiceStatus.NOT_INSTALLED,
+    port: 11211,
+    autoStart: false,
   },
 ])
 

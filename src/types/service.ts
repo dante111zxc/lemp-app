@@ -7,6 +7,7 @@ export interface Service {
   port?: number
   autoStart: boolean
   version?: string
+  isInstalled?: boolean
 }
 
 export interface ServiceStats {

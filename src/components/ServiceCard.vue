@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { Service } from '@/types/service'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -6,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Play, Square, RotateCcw, Settings } from 'lucide-vue-next'
 import type { BadgeVariants } from '@/components/ui/badge'
 import { EnumServiceStatus } from '@/enums/EnumServiceStatus'
+import ServiceConfigureModal from './ServiceConfigureModal.vue'
 
 interface Props {
   service: Service
@@ -18,6 +20,8 @@ const emit = defineEmits<{
   restart: [serviceId: string]
   configure: [serviceId: string]
 }>()
+
+const configureModalOpen = ref(false)
 
 const getStatusVariant = (status: Service['status']): BadgeVariants['variant'] => {
   switch (status) {
@@ -54,17 +58,26 @@ const getStatusText = (status: Service['status']) => {
 
 const isActionDisabled = (action: 'start' | 'stop' | 'restart') => {
   const { status } = props.service
+
+  // Disable all actions if service is not installed
+  if (status === EnumServiceStatus.NOT_INSTALLED) return true
+
   if (status === EnumServiceStatus.STARTING || status === EnumServiceStatus.STOPPING) return true
 
   switch (action) {
     case 'start':
       return status === EnumServiceStatus.ACTIVE
     case 'stop':
+      return status === EnumServiceStatus.STOPPED || status === EnumServiceStatus.ERROR || status === EnumServiceStatus.NOT_ACTIVE
     case 'restart':
-      return status === EnumServiceStatus.STOPPED || status === EnumServiceStatus.ERROR
+      return status === EnumServiceStatus.STOPPED || status === EnumServiceStatus.ERROR || status === EnumServiceStatus.NOT_ACTIVE
     default:
       return false
   }
+}
+
+const handleConfigure = () => {
+  configureModalOpen.value = true
 }
 </script>
 
@@ -87,7 +100,7 @@ const isActionDisabled = (action: 'start' | 'stop' | 'restart') => {
         <Button
           variant="ghost"
           size="icon-sm"
-          @click.stop="emit('configure', service.id)"
+          @click.stop="handleConfigure"
           aria-label="Configure service"
         >
           <Settings />
@@ -147,4 +160,14 @@ const isActionDisabled = (action: 'start' | 'stop' | 'restart') => {
       </div>
     </CardContent>
   </Card>
+
+  <ServiceConfigureModal
+    :service="service"
+    :open="configureModalOpen"
+    @update:open="configureModalOpen = $event"
+    @install="(serviceId) => emit('configure', serviceId)"
+    @start="(serviceId) => emit('start', serviceId)"
+    @stop="(serviceId) => emit('stop', serviceId)"
+    @restart="(serviceId) => emit('restart', serviceId)"
+  />
 </template>
