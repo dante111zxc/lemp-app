@@ -68,9 +68,17 @@ const isActionDisabled = (action: 'start' | 'stop' | 'restart') => {
     case 'start':
       return status === EnumServiceStatus.ACTIVE
     case 'stop':
-      return status === EnumServiceStatus.STOPPED || status === EnumServiceStatus.ERROR || status === EnumServiceStatus.NOT_ACTIVE
+      return (
+        status === EnumServiceStatus.STOPPED ||
+        status === EnumServiceStatus.ERROR ||
+        status === EnumServiceStatus.NOT_ACTIVE
+      )
     case 'restart':
-      return status === EnumServiceStatus.STOPPED || status === EnumServiceStatus.ERROR || status === EnumServiceStatus.NOT_ACTIVE
+      return (
+        status === EnumServiceStatus.STOPPED ||
+        status === EnumServiceStatus.ERROR ||
+        status === EnumServiceStatus.NOT_ACTIVE
+      )
     default:
       return false
   }
@@ -165,9 +173,9 @@ const handleConfigure = () => {
     :service="service"
     :open="configureModalOpen"
     @update:open="configureModalOpen = $event"
-    @install="(serviceId) => emit('configure', serviceId)"
-    @start="(serviceId) => emit('start', serviceId)"
-    @stop="(serviceId) => emit('stop', serviceId)"
-    @restart="(serviceId) => emit('restart', serviceId)"
+    @install="(serviceId, version) => emit('configure', serviceId)"
+    @start="serviceId => emit('start', serviceId)"
+    @stop="serviceId => emit('stop', serviceId)"
+    @restart="serviceId => emit('restart', serviceId)"
   />
 </template>

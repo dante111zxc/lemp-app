@@ -20,7 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Download, FileText, AlertCircle, CheckCircle2, Terminal, Globe } from 'lucide-vue-next'
+import {
+  Download,
+  FileText,
+  XCircle,
+  CheckCircle2,
+  Play,
+  Square,
+  RotateCcw,
+  ScrollText,
+} from 'lucide-vue-next'
 import { EnumServiceStatus } from '@/enums/EnumServiceStatus'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
@@ -36,8 +45,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:open': [open: boolean]
-  install: [serviceId: string]
-  'select-version': [serviceId: string, version: string]
+  install: [serviceId: string, version: string]
   'view-logs': [serviceId: string]
   start: [serviceId: string]
   stop: [serviceId: string]
@@ -56,65 +64,93 @@ const mockLogs = ref<string>(
 [2026-01-13 10:46:02] Request from 127.0.0.1`
 )
 
-// Available versions for each service
+// Available versions for each service that supports version selection
 const versionMap: Record<string, string[]> = {
   php: ['7.4', '8.1', '8.2', '8.3', '8.4'],
-  mysql: ['5.7', '8.0'],
-  nginx: ['1.24.0'],
-  redis: ['7.2.0'],
-  mailpit: ['1.10.0'],
-  supervisord: ['4.2.5'],
+  mysql: ['5', '8'],
+  redis: ['6.2', '7.4', '8.0', '8.2', '8.4'],
 }
 
+// Check if service is installed
 const isInstalled = computed(() => {
   if (!props.service) return false
   return props.service.status !== EnumServiceStatus.NOT_INSTALLED
 })
 
+// Check if service supports version selection
+const hasVersionSelection = computed(() => {
+  if (!props.service) return false
+  return ['php', 'mysql', 'redis'].includes(props.service.id)
+})
+
+// Get available versions for current service
 const availableVersions = computed(() => {
   if (!props.service) return []
   return versionMap[props.service.id] || []
 })
 
-const isVersionSelectable = computed(() => {
+// Check if service is running
+const isRunning = computed(() => {
   if (!props.service) return false
-  return ['php', 'mysql'].includes(props.service.id)
+  return props.service.status === EnumServiceStatus.ACTIVE
 })
 
-// Check if this is PHP service (to show FPM + CLI info)
-const isPHPService = computed(() => {
-  return props.service?.id === 'php'
-})
-
-const canStartStopRestart = computed(() => {
-  return isInstalled.value
-})
-
-const canStop = computed(() => {
+// Check if service is stopped
+const isStopped = computed(() => {
   if (!props.service) return false
-  return props.service.status !== EnumServiceStatus.STOPPED && isInstalled.value
+  return (
+    props.service.status === EnumServiceStatus.STOPPED ||
+    props.service.status === EnumServiceStatus.NOT_ACTIVE ||
+    props.service.status === EnumServiceStatus.ERROR
+  )
 })
 
+// Check if service is restarting
+const isRestarting = computed(() => {
+  if (!props.service) return false
+  return (
+    props.service.status === EnumServiceStatus.STARTING ||
+    props.service.status === EnumServiceStatus.STOPPING
+  )
+})
+
+// Button disabled states
+const isStartDisabled = computed(() => !isInstalled.value || isRunning.value || isRestarting.value)
+const isStopDisabled = computed(() => !isInstalled.value || isStopped.value || isRestarting.value)
+const isRestartDisabled = computed(() => !isInstalled.value || isRestarting.value)
+
+// Reset state when modal opens
 watch(
   () => props.open,
   newVal => {
     if (newVal && props.service) {
-      selectedVersion.value = props.service.version || ''
+      selectedVersion.value = props.service.version || availableVersions.value[0] || ''
       showLogs.value = false
     }
   }
 )
 
 const handleInstall = () => {
-  if (props.service) {
-    emit('install', props.service.id)
+  if (props.service && selectedVersion.value) {
+    emit('install', props.service.id, selectedVersion.value)
   }
 }
 
-const handleVersionChange = (version: any) => {
-  if (props.service && version) {
-    selectedVersion.value = String(version)
-    emit('select-version', props.service.id, String(version))
+const handleStart = () => {
+  if (props.service) {
+    emit('start', props.service.id)
+  }
+}
+
+const handleStop = () => {
+  if (props.service) {
+    emit('stop', props.service.id)
+  }
+}
+
+const handleRestart = () => {
+  if (props.service) {
+    emit('restart', props.service.id)
   }
 }
 
@@ -124,65 +160,36 @@ const handleViewLogs = () => {
     showLogs.value = true
   }
 }
-
-const handleClose = () => {
-  emit('update:open', false)
-}
 </script>
 
 <template>
-  <Drawer :open="open" @update:open="handleClose">
-    <DrawerContent class="max-h-[90vh]">
+  <Drawer :open="open" direction="left" @update:open="val => emit('update:open', val)">
+    <DrawerContent>
       <DrawerHeader>
-        <DrawerTitle>Configure {{ service?.displayName }}</DrawerTitle>
-        <DrawerDescription
-          >Manage installation, version, and settings for this service</DrawerDescription
-        >
+        <DrawerTitle>{{ service?.displayName }}</DrawerTitle>
+        <DrawerDescription>Quản lý cài đặt và cấu hình service</DrawerDescription>
       </DrawerHeader>
 
-      <ScrollArea class="flex-1 px-4 py-4 max-h-[60vh]">
-        <div class="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle class="text-base">Installation Status</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-4">
-              <div class="flex items-center gap-3">
-                <div v-if="isInstalled" class="flex items-center gap-2 text-green-600">
-                  <CheckCircle2 class="h-5 w-5" />
-                  <span class="font-medium">Installed</span>
-                </div>
-                <div v-else class="flex items-center gap-2 text-red-600">
-                  <AlertCircle class="h-5 w-5" />
-                  <span class="font-medium">Not Installed</span>
-                </div>
+      <ScrollArea class="flex-1 px-4 py-4 max-h-[70vh]">
+        <div class="space-y-4">
+          <!-- Section 1: Service Not Installed -->
+          <Card v-if="!isInstalled && service">
+            <CardHeader class="pb-3">
+              <div class="flex items-center gap-2">
+                <XCircle class="h-5 w-5 text-red-500" />
+                <CardTitle class="text-base text-red-600">Service chưa được cài đặt</CardTitle>
               </div>
-
-              <div v-if="!isInstalled" class="pt-2">
-                <Button @click="handleInstall" class="w-full sm:w-auto">
-                  <Download class="mr-2 h-4 w-4" />
-                  Install {{ service?.displayName }}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card v-if="isInstalled">
-            <CardHeader>
-              <CardTitle class="text-base">Version Management</CardTitle>
               <CardDescription>
-                {{
-                  isVersionSelectable
-                    ? `Select preferred version (current: ${service?.version})`
-                    : `Current version: ${service?.version}`
-                }}
+                {{ service.displayName }} chưa được cài đặt trên hệ thống
               </CardDescription>
             </CardHeader>
             <CardContent class="space-y-4">
-              <div v-if="isVersionSelectable" class="w-full">
-                <Select :model-value="selectedVersion" @update:model-value="handleVersionChange">
+              <!-- Version selection for PHP, MySQL, Redis -->
+              <div v-if="hasVersionSelection" class="space-y-3">
+                <label class="text-sm font-medium">Chọn phiên bản để cài đặt:</label>
+                <Select v-model="selectedVersion">
                   <SelectTrigger class="w-full">
-                    <SelectValue :placeholder="`Select ${service?.displayName} version`" />
+                    <SelectValue :placeholder="`Chọn phiên bản ${service.displayName}`" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem
@@ -190,166 +197,103 @@ const handleClose = () => {
                       :key="version"
                       :value="version"
                     >
-                      {{ service?.displayName }} {{ version }}
+                      {{ service.displayName }} {{ version }}
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div v-else class="flex items-center gap-2">
-                <Badge variant="outline">{{ service?.version }}</Badge>
-                <span class="text-sm text-muted-foreground">Latest version in use</span>
-              </div>
 
-              <!-- PHP specific: Show FPM and CLI info -->
-              <div v-if="isPHPService && isInstalled" class="border-t pt-4 mt-4">
-                <p class="text-sm font-medium mb-3">Components included:</p>
-                <div class="space-y-3">
-                  <div class="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                    <Globe class="h-5 w-5 text-blue-500" />
-                    <div class="flex-1">
-                      <p class="text-sm font-medium">PHP-FPM</p>
-                      <p class="text-xs text-muted-foreground">
-                        FastCGI Process Manager for web requests
-                      </p>
-                    </div>
-                    <Badge variant="secondary" class="text-xs">Port 9000</Badge>
-                  </div>
-                  <div class="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                    <Terminal class="h-5 w-5 text-green-500" />
-                    <div class="flex-1">
-                      <p class="text-sm font-medium">PHP-CLI</p>
-                      <p class="text-xs text-muted-foreground">
-                        Command line interface for scripts & artisan
-                      </p>
-                    </div>
-                    <Badge variant="secondary" class="text-xs font-mono">/usr/bin/php</Badge>
-                  </div>
+              <Button
+                class="w-full"
+                :disabled="hasVersionSelection && !selectedVersion"
+                @click="handleInstall"
+              >
+                <Download class="mr-2 h-4 w-4" />
+                Cài đặt {{ service.displayName }}
+                <span v-if="selectedVersion"> {{ selectedVersion }}</span>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <!-- Section 2: Service Information (only when installed) -->
+          <Card v-if="isInstalled && service" class="gap-y-2">
+            <CardHeader>
+              <div class="flex items-center gap-2">
+                <CheckCircle2 class="h-5 w-5 text-green-500" />
+                <CardTitle class="text-base">Thông tin Service</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="space-y-1">
+                  <span class="text-muted-foreground">Tên service</span>
+                  <p class="font-medium">{{ service.displayName }}</p>
                 </div>
-                <p class="text-xs text-muted-foreground mt-3">
-                  Both components use PHP {{ selectedVersion || service?.version }} simultaneously
-                </p>
+                <div class="space-y-1 space-x-1">
+                  <span class="text-muted-foreground">PID</span>
+                  <span class="text-sm font-semibold">{{ isRunning ? '12345' : '-' }}</span>
+                </div>
+                <div class="space-y-1 space-x-1">
+                  <span class="text-muted-foreground">Cổng</span>
+                  <span class="text-sm font-semibold">{{ service.port || '-' }}</span>
+                </div>
+                <div class="space-y-1 space-x-1">
+                  <span class="text-muted-foreground">Trạng thái</span>
+                  <span class="text-sm font-semibold">{{
+                    EnumServiceStatus.getLabel(service.status)
+                  }}</span>
+                </div>
+                <div class="space-y-1 space-x-1">
+                  <span class="text-muted-foreground">Phiên bản</span>
+                  <span class="text-sm font-semibold">{{ service.version || '-' }}</span>
+                </div>
+                <div class="space-y-1 space-x-1">
+                  <span class="text-muted-foreground">Tự khởi động</span>
+                  <span class="text-sm font-semibold">{{ service.autoStart ? 'Bật' : 'Tắt' }}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card v-if="isInstalled">
-            <CardHeader>
-              <CardTitle class="text-base">Service Controls</CardTitle>
-              <CardDescription>
-                {{
-                  isPHPService
-                    ? 'Start, stop, and manage PHP-FPM service'
-                    : 'Start, stop, and manage this service'
-                }}
-              </CardDescription>
+          <!-- Section 3: Service Controls (only when installed) -->
+          <Card v-if="isInstalled && service">
+            <CardHeader class="pb-3">
+              <CardTitle class="text-base">Điều khiển Service</CardTitle>
+              <CardDescription>Khởi động, dừng hoặc khởi động lại service</CardDescription>
             </CardHeader>
             <CardContent>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="grid grid-cols-2 gap-3">
                 <Button
                   variant="outline"
-                  :disabled="!canStartStopRestart"
-                  @click="service && emit('start', service.id)"
+                  :disabled="isStartDisabled"
+                  @click="handleStart"
                   class="w-full"
                 >
+                  <Play class="mr-2 h-4 w-4" />
                   Start
                 </Button>
                 <Button
                   variant="outline"
-                  :disabled="!canStop"
-                  @click="service && emit('stop', service.id)"
+                  :disabled="isStopDisabled"
+                  @click="handleStop"
                   class="w-full"
                 >
+                  <Square class="mr-2 h-4 w-4" />
                   Stop
                 </Button>
                 <Button
                   variant="outline"
-                  :disabled="!canStartStopRestart"
-                  @click="service && emit('restart', service.id)"
+                  :disabled="isRestartDisabled"
+                  @click="handleRestart"
                   class="w-full"
                 >
+                  <RotateCcw class="mr-2 h-4 w-4" />
                   Restart
                 </Button>
-              </div>
-              <p v-if="isPHPService" class="text-xs text-muted-foreground mt-3">
-                Note: PHP-CLI doesn't require a running service. Only PHP-FPM needs to be started
-                for web requests.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card v-if="isInstalled">
-            <CardHeader>
-              <CardTitle class="text-base">Service Logs</CardTitle>
-              <CardDescription>
-                {{
-                  isPHPService
-                    ? 'View PHP-FPM error and access logs'
-                    : 'View and monitor service logs'
-                }}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button @click="handleViewLogs" variant="outline" class="w-full sm:w-auto">
-                <FileText class="mr-2 h-4 w-4" />
-                View Logs
-              </Button>
-
-              <!-- Logs Drawer -->
-              <Drawer :open="showLogs" @update:open="val => (showLogs = val)">
-                <DrawerContent class="max-h-[85vh]">
-                  <DrawerHeader>
-                    <DrawerTitle>{{ service?.displayName }} Logs</DrawerTitle>
-                    <DrawerDescription>
-                      {{
-                        isPHPService ? 'PHP-FPM error and access logs' : 'Real-time service logs'
-                      }}
-                    </DrawerDescription>
-                  </DrawerHeader>
-
-                  <div class="px-4 flex-1 overflow-hidden">
-                    <div
-                      class="bg-black/5 dark:bg-black/50 rounded-md p-4 h-[40vh] overflow-hidden"
-                    >
-                      <ScrollArea class="h-full">
-                        <pre class="text-sm font-mono text-foreground whitespace-pre-wrap">{{
-                          mockLogs
-                        }}</pre>
-                      </ScrollArea>
-                    </div>
-                  </div>
-
-                  <DrawerFooter>
-                    <DrawerClose as-child>
-                      <Button variant="outline" class="w-full"> Close </Button>
-                    </DrawerClose>
-                  </DrawerFooter>
-                </DrawerContent>
-              </Drawer>
-            </CardContent>
-          </Card>
-
-          <Card v-if="service">
-            <CardHeader>
-              <CardTitle class="text-base">Service Information</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2 text-sm">
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <span class="text-muted-foreground">Service ID:</span>
-                  <p class="font-mono text-xs">{{ service.id }}</p>
-                </div>
-                <div v-if="service.port">
-                  <span class="text-muted-foreground">Port:</span>
-                  <p class="font-mono">{{ service.port }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">Status:</span>
-                  <p>{{ EnumServiceStatus.getLabel(service.status) }}</p>
-                </div>
-                <div>
-                  <span class="text-muted-foreground">Auto Start:</span>
-                  <p>{{ service.autoStart ? 'Enabled' : 'Disabled' }}</p>
-                </div>
+                <Button variant="outline" @click="handleViewLogs" class="w-full">
+                  <ScrollText class="mr-2 h-4 w-4" />
+                  Xem Log
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -358,9 +302,35 @@ const handleClose = () => {
 
       <DrawerFooter>
         <DrawerClose as-child>
-          <Button variant="outline" class="w-full">Close</Button>
+          <Button variant="outline" class="w-full">Đóng</Button>
         </DrawerClose>
       </DrawerFooter>
+
+      <!-- Logs Drawer -->
+      <Drawer :open="showLogs" @update:open="val => (showLogs = val)">
+        <DrawerContent class="max-h-[85vh]">
+          <DrawerHeader>
+            <DrawerTitle>{{ service?.displayName }} Logs</DrawerTitle>
+            <DrawerDescription>Xem log của service</DrawerDescription>
+          </DrawerHeader>
+
+          <div class="px-4 flex-1 overflow-hidden">
+            <div class="bg-black/5 dark:bg-black/50 rounded-md p-4 h-[40vh] overflow-hidden">
+              <ScrollArea class="h-full">
+                <pre class="text-sm font-mono text-foreground whitespace-pre-wrap">{{
+                  mockLogs
+                }}</pre>
+              </ScrollArea>
+            </div>
+          </div>
+
+          <DrawerFooter>
+            <DrawerClose as-child>
+              <Button variant="outline" class="w-full">Đóng</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </DrawerContent>
   </Drawer>
 </template>
