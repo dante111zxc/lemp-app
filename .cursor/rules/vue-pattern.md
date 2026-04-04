@@ -1,0 +1,5 @@
+- Luôn sử dụng Typescript cho các file vue, ts
+- luôn sử dụng eslint và prettier
+- sử dụng PascalCase
+- Ưu tiên sử dụng các component shadcn-vue
+- Sử dụng composables để đóng gói và tái sử dụng logic
