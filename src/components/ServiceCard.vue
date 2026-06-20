@@ -173,7 +173,7 @@ const handleConfigure = () => {
     :service="service"
     :open="configureModalOpen"
     @update:open="configureModalOpen = $event"
-    @install="(serviceId, version) => emit('configure', serviceId)"
+    @install="(serviceId) => emit('configure', serviceId)"
     @start="serviceId => emit('start', serviceId)"
     @stop="serviceId => emit('stop', serviceId)"
     @restart="serviceId => emit('restart', serviceId)"

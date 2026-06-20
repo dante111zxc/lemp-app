@@ -4,44 +4,40 @@ import type { RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    name: 'Home',
-    component: () => import('../views/Home.vue'),
+    name: 'Dashboard',
+    component: () => import('../views/Dashboard.vue'),
+    meta: { title: 'Dashboard' },
   },
   {
-    path: '/about',
-    name: 'About',
-    component: () => import('../views/About.vue'),
+    path: '/nginx',
+    name: 'Nginx',
+    component: () => import('../views/Nginx.vue'),
+    meta: { title: 'Nginx' },
   },
-  // {
-  //   path: '/dashboard',
-  //   component: Home,
-  //   children: [
-  //     {
-  //       path: '',
-  //       name: 'Dashboard',
-  //       component: () => import('../views/dashboard/Dashboard.vue'),
-  //       meta: { title: 'Dashboard' },
-  //     },
-  //     {
-  //       path: 'users',
-  //       name: 'Users',
-  //       component: () => import('../views/dashboard/Users.vue'),
-  //       meta: { title: 'Users' },
-  //     },
-  //     {
-  //       path: 'analytics',
-  //       name: 'Analytics',
-  //       component: () => import('../views/dashboard/Analytics.vue'),
-  //       meta: { title: 'Analytics' },
-  //     },
-  //     {
-  //       path: 'settings',
-  //       name: 'Settings',
-  //       component: () => import('../views/dashboard/Settings.vue'),
-  //       meta: { title: 'Settings' },
-  //     },
-  //   ],
-  // },
+  {
+    path: '/mysql',
+    name: 'MySQL',
+    component: () => import('../views/Mysql.vue'),
+    meta: { title: 'MySQL' },
+  },
+  {
+    path: '/redis',
+    name: 'Redis',
+    component: () => import('../views/Redis.vue'),
+    meta: { title: 'Redis' },
+  },
+  {
+    path: '/mailpit',
+    name: 'Mailpit',
+    component: () => import('../views/Mailpit.vue'),
+    meta: { title: 'Mailpit' },
+  },
+  {
+    path: '/php',
+    name: 'PHP',
+    component: () => import('../views/Php.vue'),
+    meta: { title: 'PHP' },
+  },
 ]
 
 const router = createRouter({

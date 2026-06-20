@@ -12,7 +12,6 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -22,7 +21,6 @@ import {
 } from '@/components/ui/select'
 import {
   Download,
-  FileText,
   XCircle,
   CheckCircle2,
   Play,
