@@ -14,6 +14,7 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table'
+import { EnumServiceStatus } from '@/enums/EnumServiceStatus'
 
 const serviceStatus = ref<'running' | 'stopped' | 'error'>('running')
 const servicePort = ref(80)
@@ -39,8 +40,8 @@ const handleEditConfig = (name: string) => console.log('Edit config for:', name)
         <span class="text-muted-foreground text-xs">v{{ serviceVersion }}</span>
       </div>
       <div class="flex gap-2">
-        <ServiceStatus :status="1" />
-        <ButtonStart />
+        <ServiceStatus :status="EnumServiceStatus.RUNNING" />
+        <ButtonStart :status="EnumServiceStatus.RUNNING" />
         <Button
           variant="outline"
           size="sm"

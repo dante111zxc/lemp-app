@@ -1,16 +1,20 @@
 <template>
-  <Button variant="outline" size="sm" @click="handleStart" :disabled="serviceStatus === 'running'">
-    <Play class="h-4 w-4 mr-1" /> Start
-  </Button>
+  <Play
+    class="h-4 w-4 mr-1 text-green-600 cursor-pointer"
+    @click="handleStart"
+    :disabled="
+      props.status === EnumServiceStatus.NOT_INSTALLED || props.status === EnumServiceStatus.RUNNING
+    "
+  />
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { Play, Square, RotateCcw, Globe, Settings } from 'lucide-vue-next'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Play } from 'lucide-vue-next'
+import { EnumServiceStatus } from '@/enums/EnumServiceStatus'
 
-const serviceStatus = ref('running')
+const props = defineProps<{
+  status: number
+}>()
 
 const handleStart = () => {
   console.log('handle start')
