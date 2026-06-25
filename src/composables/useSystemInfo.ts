@@ -11,7 +11,7 @@ export function useSystemInfo(refreshInterval = 5000) {
 
   const fetchSystemInfo = async () => {
     try {
-      const info = await invoke<SystemInfo>('get_system_info')
+      const info = await invoke<SystemInfo>('get_hardware_info')
       systemInfo.value = info
       error.value = null
     } catch (err) {

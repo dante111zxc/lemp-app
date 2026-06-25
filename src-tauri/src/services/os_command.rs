@@ -1,0 +1,1 @@
+//chạy bash script, systemctl, brew services độc lập theo OS

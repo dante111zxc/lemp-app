@@ -1,0 +1,1 @@
+//Hàm Đọc/Ghi file cấu hình (.conf, .ini)
