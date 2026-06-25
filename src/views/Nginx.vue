@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Play, Square, RotateCcw, Globe, Settings } from 'lucide-vue-next'
+import { Globe, Settings } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,8 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { EnumServiceStatus } from '@/enums/EnumServiceStatus'
+import ButtonStop from '@/components/ButtonStop.vue'
+import ButtonRestart from '@/components/ButtonRestart.vue'
 
 const serviceStatus = ref<'running' | 'stopped' | 'error'>('running')
 const servicePort = ref(80)
@@ -42,47 +44,9 @@ const handleEditConfig = (name: string) => console.log('Edit config for:', name)
       <div class="flex gap-2">
         <ServiceStatus :status="EnumServiceStatus.RUNNING" />
         <ButtonStart :status="EnumServiceStatus.RUNNING" />
-        <Button
-          variant="outline"
-          size="sm"
-          @click="handleStop"
-          :disabled="serviceStatus !== 'running'"
-        >
-          <Square class="h-4 w-4 mr-1" /> Stop
-        </Button>
-        <Button variant="outline" size="sm" @click="handleRestart">
-          <RotateCcw class="h-4 w-4 mr-1" /> Restart
-        </Button>
+        <ButtonStop :status="EnumServiceStatus.RUNNING" />
+        <ButtonRestart :status="EnumServiceStatus.RUNNING" />
       </div>
-    </div>
-
-    <div class="grid gap-4 md:grid-cols-3">
-      <Card>
-        <CardContent>
-          <Badge
-            :variant="serviceStatus === 'running' ? 'default' : 'secondary'"
-            class="capitalize"
-          >
-            {{ serviceStatus }}
-          </Badge>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader class="pb-2">
-          <CardTitle class="text-sm font-medium">Port</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="text-lg font-bold">{{ servicePort }}</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader class="pb-2">
-          <CardTitle class="text-sm font-medium">Version</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="text-lg font-bold">{{ serviceVersion }}</div>
-        </CardContent>
-      </Card>
     </div>
 
     <!--data table-->

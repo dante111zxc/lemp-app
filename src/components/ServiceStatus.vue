@@ -1,6 +1,6 @@
 <template>
   <span
-    class="inline-flex items-center gap-2 border rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-0.5"
+    class="inline-flex items-center gap-2 border rounded-full px-4 py-2 text-sm font-medium transition-all duration-300"
     :class="btnClass"
   >
     <span class="relative flex h-2.5 w-2.5">
@@ -26,8 +26,8 @@ const props = defineProps<{
 
 const btnClass = computed(() => {
   return props.status === 0
-    ? 'bg-red-50 text-red border-red-200 hover:bg-red-100'
-    : 'bg-green-50 text-green border-green-200 hover:bg-green-100'
+    ? 'bg-red-50 text-red border-red-200'
+    : 'bg-green-50 text-green border-green-200'
 })
 
 const bgClass = computed(() => {
