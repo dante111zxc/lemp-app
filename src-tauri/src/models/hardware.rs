@@ -13,5 +13,10 @@ pub struct HardwareInfo {
     pub os_version: String,
     pub total_memory_gb: f64,
     pub used_memory_gb: f64,
+    pub hard_disk_memory_gb: f64,
+    pub hard_disk_used_memory_gb: f64,
     pub cpus: Vec<CpuInfo>,
+    pub logical_cores: usize,
+    pub physical_cores: usize,
+    pub cpu_architecture: String
 }

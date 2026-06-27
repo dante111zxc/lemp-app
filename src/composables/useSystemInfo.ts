@@ -2,7 +2,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import type { SystemInfo } from '@/types/system'
 
-export function useSystemInfo(refreshInterval = 5000) {
+export const useSystemInfo = (refreshInterval = 5000) => {
   const systemInfo = ref<SystemInfo | null>(null)
   const loading = ref(true)
   const error = ref<string | null>(null)
