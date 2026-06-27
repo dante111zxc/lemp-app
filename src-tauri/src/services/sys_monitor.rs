@@ -34,7 +34,6 @@ impl SystemMonitor {
         // Thu thập thông tin chi tiết từng nhân CPU
         let cpus = sys.cpus().iter().map(|cpu| {
             CpuInfo {
-                brand: cpu.brand().to_string(),
                 frequency_mhz: cpu.frequency(),
                 usage_percent: cpu.cpu_usage(),
             }
@@ -44,18 +43,27 @@ impl SystemMonitor {
         let cpu_architecture = ARCH.to_string();
         let logical_cores = sys.cpus().len(); // Số nhân logic (Luồng)
         let physical_cores = sys.physical_core_count().unwrap_or(logical_cores); // Số nhân vật lý
-
+        let cpu_brand = sys.cpus()
+            .first()
+            .map(|cpu| cpu.brand().to_string())
+            .unwrap_or_else(|| "Unknown CPU".to_string());
+        let total_core = logical_cores + physical_cores;
+        let total_cpu_usage = sys.global_cpu_usage();
+        
         HardwareInfo {
             os_name: System::name().unwrap_or_else(|| "Unknown OS".to_string()),
             os_version: System::os_version().unwrap_or_else(|| "".to_string()),
             total_memory_gb,
             used_memory_gb,
             cpus,
+            total_cpu_usage,
             hard_disk_memory_gb: total_disk_gb,
             hard_disk_used_memory_gb: used_disk_gb,
-            cpu_architecture: cpu_architecture,
-            physical_cores: physical_cores,
-            logical_cores: logical_cores
+            cpu_architecture,
+            physical_cores,
+            logical_cores,
+            total_core,
+            cpu_brand,
         }
     }
 }

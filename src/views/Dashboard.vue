@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useSystemInfo } from '@/composables/useSystemInfo'
 import { formatBytes } from '@/utils/format'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Activity, Cpu, HardDrive, MemoryStick, Monitor } from 'lucide-vue-next'
+import { Dot } from 'lucide-vue-next'
+import { Progress } from '@/components/ui/progress'
 
-const { systemInfo, loading, error } = useSystemInfo(5000)
+const { systemInfo, loading, error } = useSystemInfo(3000)
 </script>
 
 <template>
@@ -32,15 +32,29 @@ const { systemInfo, loading, error } = useSystemInfo(5000)
     </div>
 
     <template v-else-if="systemInfo">
-      <prE>{{ systemInfo }}</prE>
       <div class="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
         <div class="w-full max-w-full rounded-md border p-2 h-22">
-          <div class="flex">
-            <div class="flex">
-              <div class="text-sm font-medium">{{ systemInfo.cpus[0].brand }}</div>
-              <div class="text-xs text-gray-500"></div>
+          <div class="flex justify-between mb-4">
+            <div class="flex flex-col gap-y-1">
+              <div class="text-sm font-medium">{{ systemInfo.cpu_brand }}</div>
+              <div class="text-xs text-gray-500 flex gap-x-1 items-center">
+                <span>{{ systemInfo.cpu_architecture }}</span>
+                <span><Dot class="w-2 h-2" /></span>
+                <span>{{ systemInfo.total_core }} cores</span>
+              </div>
             </div>
+
+            <!-- CPU usage -->
+            <div>
+              <span class="text-2xl font-semibold mr-1">{{
+                systemInfo.total_cpu_usage.toFixed(2)
+              }}</span>
+              <span class="text-xs text-gray-500">%</span>
+            </div>
+            <!-- CPU usage -->
           </div>
+
+          <Progress :model-value="systemInfo.total_cpu_usage" />
         </div>
       </div>
     </template>

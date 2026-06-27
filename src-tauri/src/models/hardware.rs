@@ -2,7 +2,6 @@ use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct CpuInfo {
-    pub brand: String,
     pub frequency_mhz: u64,
     pub usage_percent: f32,
 }
@@ -18,5 +17,8 @@ pub struct HardwareInfo {
     pub cpus: Vec<CpuInfo>,
     pub logical_cores: usize,
     pub physical_cores: usize,
-    pub cpu_architecture: String
+    pub total_core: usize,
+    pub cpu_brand: String,
+    pub cpu_architecture: String,
+    pub total_cpu_usage: f32
 }
