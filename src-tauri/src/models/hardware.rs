@@ -1,12 +1,12 @@
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct CpuInfo {
     pub frequency_mhz: u64,
     pub usage_percent: f32,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct HardwareInfo {
     pub os_name: String,
     pub os_version: String,

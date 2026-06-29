@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Globe, Settings } from 'lucide-vue-next'
+import { Globe, Settings, LoaderCircle } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,20 +17,14 @@ import {
 import { EnumServiceStatus } from '@/enums/EnumServiceStatus'
 import ButtonStop from '@/components/ButtonStop.vue'
 import ButtonRestart from '@/components/ButtonRestart.vue'
-
-const serviceStatus = ref<'running' | 'stopped' | 'error'>('running')
-const servicePort = ref(80)
-const serviceVersion = ref('1.25.3')
-
+import { useNginx } from '@/composables/useNginx'
+const { nginxRes, start, stop, restart, loading } = useNginx()
 const websites = ref([
   { name: 'localhost', root: '/var/www/html', enabled: true },
   { name: 'lemp-app.test', root: '/var/www/html/lemp-app', enabled: true },
   { name: 'example.test', root: '/var/www/html/example', enabled: false },
 ])
 
-const handleStart = () => console.log('Start Nginx')
-const handleStop = () => console.log('Stop Nginx')
-const handleRestart = () => console.log('Restart Nginx')
 const handleEditConfig = (name: string) => console.log('Edit config for:', name)
 </script>
 
@@ -39,13 +33,26 @@ const handleEditConfig = (name: string) => console.log('Edit config for:', name)
     <div class="flex items-center justify-between">
       <div class="flex gap-x-2">
         <span class="text-xl font-bold">Nginx</span>
-        <span class="text-muted-foreground text-xs">v{{ serviceVersion }}</span>
+        <span class="text-muted-foreground text-xs">v{{ nginxRes?.data.version }}</span>
+        <span><LoaderCircle class="h-4 w-4 animate-spin"></LoaderCircle></span>
       </div>
       <div class="flex gap-2">
-        <ServiceStatus :status="EnumServiceStatus.RUNNING" />
-        <ButtonStart :status="EnumServiceStatus.RUNNING" />
-        <ButtonStop :status="EnumServiceStatus.RUNNING" />
-        <ButtonRestart :status="EnumServiceStatus.RUNNING" />
+        <ServiceStatus
+          v-if="
+            nginxRes?.data.status !== undefined &&
+            nginxRes.data.status !== EnumServiceStatus.NOT_INSTALLED
+          "
+          :status="nginxRes?.data.status"
+        />
+
+        <template v-if="nginxRes?.data.status === EnumServiceStatus.RUNNING">
+          <ButtonStop :status="EnumServiceStatus.RUNNING" @click="stop" :loading="loading" />
+          <ButtonRestart :status="EnumServiceStatus.RUNNING" @click="restart" :loading="loading" />
+        </template>
+
+        <template v-else-if="nginxRes?.data.status === EnumServiceStatus.STOPPED">
+          <ButtonStart :status="EnumServiceStatus.STOPPED" @click="start" :loading="loading" />
+        </template>
       </div>
     </div>
 

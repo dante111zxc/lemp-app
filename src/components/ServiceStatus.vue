@@ -10,31 +10,32 @@
       ></span>
       <span class="relative inline-flex rounded-full h-2.5 w-2.5" :class="bgClass"></span>
     </span>
-    <span
-      class="text-xs"
-      :class="{ 'text-green-500': props.status === 1, 'text-red-500': props.status === 0 }"
-      >{{ text }}</span
-    >
+    <span class="text-xs" :class="textClass">{{ text }}</span>
   </span>
 </template>
 
 <script lang="ts" setup>
+import { EnumServiceStatus } from '@/enums/EnumServiceStatus'
 import { computed } from 'vue'
 const props = defineProps<{
   status: number
 }>()
 
 const btnClass = computed(() => {
-  return props.status === 0
+  return props.status === EnumServiceStatus.STOPPED
     ? 'bg-red-50 text-red border-red-200'
     : 'bg-green-50 text-green border-green-200'
 })
 
 const bgClass = computed(() => {
-  return props.status == 0 ? 'bg-red-500' : 'bg-green-500'
+  return props.status == EnumServiceStatus.STOPPED ? 'bg-red-500' : 'bg-green-500'
 })
 
 const text = computed(() => {
-  return props.status === 0 ? 'Stop' : 'Running'
+  return props.status === EnumServiceStatus.STOPPED ? 'Stop' : 'Running'
+})
+
+const textClass = computed(() => {
+  return props.status === EnumServiceStatus.RUNNING ? 'text-green-500' : 'text-red-500'
 })
 </script>

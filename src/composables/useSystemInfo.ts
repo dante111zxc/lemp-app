@@ -1,27 +1,13 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 import type { SystemInfo } from '@/types/system'
 
-export const useSystemInfo = (refreshInterval = 5000) => {
+export const useSystemInfo = () => {
   const systemInfo = ref<SystemInfo | null>(null)
   const loading = ref(true)
   const error = ref<string | null>(null)
 
-  let intervalId: ReturnType<typeof setInterval> | null = null
-
-  const fetchSystemInfo = async () => {
-    try {
-      const info = await invoke<SystemInfo>('get_hardware_info')
-      systemInfo.value = info
-
-      error.value = null
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch system info'
-      console.error('Error fetching system info:', err)
-    } finally {
-      loading.value = false
-    }
-  }
+  let unlisten: (() => void) | null = null
 
   const cpuMhz = computed(() => {
     if (!systemInfo.value?.cpus) {
@@ -35,34 +21,30 @@ export const useSystemInfo = (refreshInterval = 5000) => {
     )
   })
 
-  const startAutoRefresh = () => {
-    if (intervalId) return
-    intervalId = setInterval(fetchSystemInfo, refreshInterval)
-  }
-
-  const stopAutoRefresh = () => {
-    if (intervalId) {
-      clearInterval(intervalId)
-      intervalId = null
-    }
-  }
-
   onMounted(() => {
-    fetchSystemInfo()
-    startAutoRefresh()
+    listen<SystemInfo>('system-info', (event) => {
+      systemInfo.value = event.payload
+      loading.value = false
+      error.value = null
+    }).then((fn) => {
+      unlisten = fn
+    }).catch((err) => {
+      error.value = err instanceof Error ? err.message : 'Failed to listen system-info event'
+      loading.value = false
+    })
   })
 
   onUnmounted(() => {
-    stopAutoRefresh()
+    if (unlisten) {
+      unlisten()
+      unlisten = null
+    }
   })
 
   return {
     systemInfo,
     loading,
     error,
-    refresh: fetchSystemInfo,
-    startAutoRefresh,
-    stopAutoRefresh,
     cpuMhz,
   }
 }

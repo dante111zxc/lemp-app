@@ -15,26 +15,23 @@
 
 <script lang="ts" setup>
 import { EnumServiceStatus } from '@/enums/EnumServiceStatus'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { Square } from 'lucide-vue-next'
 
 const props = defineProps<{
   status: number
+  loading: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'update', value: number): void
 }>()
 
-const serviceStatus = ref(props.status)
-
-//nếu servce bị dừng hoặc chưa cài đặt thì disabled
 const isDisabled = computed(() => {
-  return serviceStatus.value !== EnumServiceStatus.RUNNING
+  return props.status !== EnumServiceStatus.RUNNING || props.loading
 })
 
 const handleClick = () => {
-  console.log('handle start')
-  emit('update', serviceStatus.value)
+  emit('update', props.status)
 }
 </script>

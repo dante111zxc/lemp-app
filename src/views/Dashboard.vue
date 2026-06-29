@@ -4,7 +4,7 @@ import { Dot, Zap, AudioLinesIcon, Cpu, ChartPieIcon } from 'lucide-vue-next'
 import { Progress } from '@/components/ui/progress'
 import { formatCpuFrequency } from '@/utils/format'
 
-const { systemInfo, loading, error, cpuMhz } = useSystemInfo(3000)
+const { systemInfo, loading, error, cpuMhz } = useSystemInfo()
 </script>
 
 <template>
@@ -15,11 +15,7 @@ const { systemInfo, loading, error, cpuMhz } = useSystemInfo(3000)
     </div>
 
     <div v-if="loading" class="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
-      <div class="w-full max-w-full rounded-md border p-2 h-22">
-        <div class="h-full w-full animate-pulse rounded bg-muted" />
-      </div>
-
-      <div class="w-full max-w-full rounded-md border p-2 h-22">
+      <div class="w-full max-w-full rounded-md border p-2 h-40">
         <div class="h-full w-full animate-pulse rounded bg-muted" />
       </div>
     </div>
