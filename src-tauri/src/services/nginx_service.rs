@@ -1,7 +1,9 @@
 use std::process::Command;
 use std::env;
+use std::path::Path;
 use crate::models::nginx::Nginx;
 use crate::models::nginx::NginxData;
+use crate::models::nginx::Website;
 
 pub struct NginxService;
 
@@ -125,6 +127,98 @@ impl NginxService {
             .unwrap_or(raw) // Nếu không chia được thì giữ nguyên chuỗi thô
             .trim() // Xóa bỏ khoảng trắng và dấu xuống dòng \n
             .to_string()
+    }
+
+    pub fn get_list_websites() -> Vec<Website> {
+        let mut websites: Vec<Website> = Vec::new();
+
+        let common_roots = [
+            "/etc/nginx/sites-enabled",
+            "/etc/nginx/conf.d",
+            "/usr/local/etc/nginx/servers",
+            "/opt/homebrew/etc/nginx/servers",
+        ];
+
+        let mut config_files: Vec<String> = Vec::new();
+
+        for root in common_roots {
+            if Path::new(root).exists() {
+                if let Ok(entries) = std::fs::read_dir(root) {
+                    for entry in entries.flatten() {
+                        let path = entry.path();
+                        if path.extension().map_or(false, |ext| ext == "conf")
+                            || path.file_name().map_or(false, |n| !n.to_string_lossy().starts_with('.'))
+                        {
+                            config_files.push(path.to_string_lossy().to_string());
+                        }
+                    }
+                }
+            }
+        }
+
+        for file_path in &config_files {
+            let name = Path::new(file_path)
+                .file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_else(|| file_path.clone());
+
+            let content = std::fs::read_to_string(file_path).unwrap_or_default();
+
+            let server_name = Self::extract_nginx_value(&content, "server_name");
+            let root = Self::extract_nginx_value(&content, "root");
+
+            let domain = if !server_name.is_empty() && server_name != "_" {
+                server_name
+            } else {
+                name.trim_end_matches(".conf").to_string()
+            };
+
+            let doc_root = if !root.is_empty() {
+                root
+            } else {
+                String::from("/var/www/html")
+            };
+
+            let enabled = file_path.contains("sites-enabled") || file_path.contains("conf.d");
+
+            websites.push(Website {
+                name: domain,
+                root: doc_root,
+                enabled,
+                file_path: file_path.clone(),
+            });
+        }
+
+        if websites.is_empty() {
+            websites.push(Website {
+                name: String::from("default"),
+                root: String::from("/var/www/html"),
+                enabled: true,
+                file_path: String::from("/etc/nginx/sites-available/default"),
+            });
+        }
+
+        websites
+    }
+
+    fn extract_nginx_value(content: &str, directive: &str) -> String {
+        for line in content.lines() {
+            let trimmed = line.trim();
+            if trimmed.starts_with(directive) {
+                let value = trimmed
+                    .strip_prefix(directive)
+                    .unwrap_or("")
+                    .trim()
+                    .trim_end_matches(';')
+                    .trim()
+                    .to_string();
+
+                if !value.is_empty() {
+                    return value.split_whitespace().next().unwrap_or("").to_string();
+                }
+            }
+        }
+        String::new()
     }
 
     pub fn is_installed () -> bool {

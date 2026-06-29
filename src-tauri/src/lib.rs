@@ -14,9 +14,12 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::hardware_control::get_hardware_info,
             commands::nginx_control::get_nginx_status,
+            commands::nginx_control::get_list_websites,
             commands::nginx_control::start_nginx,
             commands::nginx_control::stop_nginx,
             commands::nginx_control::restart_nginx,
+            commands::config_manager::read_nginx_config,
+            commands::config_manager::write_nginx_config,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -35,7 +38,7 @@ pub fn run() {
                 loop {
                     let status = NginxService::get_nginx_status();
                     let _ = handle.emit("nginx-status", status);
-                    std::thread::sleep(Duration::from_secs(1));
+                    std::thread::sleep(Duration::from_secs(2));
                 }
             });
 

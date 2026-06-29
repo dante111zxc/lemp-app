@@ -11,3 +11,11 @@ pub struct Nginx {
     pub message: String,
     pub data: NginxData,
 }
+
+#[derive(Serialize, Clone)]
+pub struct Website {
+    pub name: String,
+    pub root: String,
+    pub enabled: bool,
+    pub file_path: String,
+}

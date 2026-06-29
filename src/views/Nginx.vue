@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Globe, Settings, LoaderCircle } from 'lucide-vue-next'
+import { Globe, Settings, LoaderCircle, Ban } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,15 +16,22 @@ import {
 import { EnumServiceStatus } from '@/enums/EnumServiceStatus'
 import ButtonStop from '@/components/ButtonStop.vue'
 import ButtonRestart from '@/components/ButtonRestart.vue'
+import NginxConfigEditor from '@/components/NginxConfigEditor.vue'
 import { useNginx } from '@/composables/useNginx'
-const { nginxRes, start, stop, restart, loading } = useNginx()
-const websites = ref([
-  { name: 'localhost', root: '/var/www/html', enabled: true },
-  { name: 'lemp-app.test', root: '/var/www/html/lemp-app', enabled: true },
-  { name: 'example.test', root: '/var/www/html/example', enabled: false },
-])
-
-const handleEditConfig = (name: string) => console.log('Edit config for:', name)
+const {
+  nginxRes,
+  websites,
+  configContent,
+  editingWebsite,
+  loading,
+  error,
+  start,
+  stop,
+  restart,
+  show,
+  update,
+  closeEditor,
+} = useNginx()
 </script>
 
 <template>
@@ -33,16 +39,16 @@ const handleEditConfig = (name: string) => console.log('Edit config for:', name)
     <div class="flex items-center justify-between">
       <div class="flex gap-x-2">
         <span class="text-xl font-bold">Nginx</span>
-        <span class="text-muted-foreground text-xs">v{{ nginxRes?.data.version }}</span>
-        <span><LoaderCircle class="h-4 w-4 animate-spin"></LoaderCircle></span>
+        <span v-if="nginxRes?.data?.version" class="text-muted-foreground text-xs"
+          >v{{ nginxRes?.data.version }}</span
+        >
+
+        <span v-if="loading"><LoaderCircle class="h-4 w-4 animate-spin"></LoaderCircle></span>
       </div>
       <div class="flex gap-2">
         <ServiceStatus
-          v-if="
-            nginxRes?.data.status !== undefined &&
-            nginxRes.data.status !== EnumServiceStatus.NOT_INSTALLED
-          "
-          :status="nginxRes?.data.status"
+          v-if="nginxRes?.data.status !== EnumServiceStatus.NOT_INSTALLED"
+          :status="nginxRes?.data.status as number"
         />
 
         <template v-if="nginxRes?.data.status === EnumServiceStatus.RUNNING">
@@ -56,7 +62,13 @@ const handleEditConfig = (name: string) => console.log('Edit config for:', name)
       </div>
     </div>
 
-    <!--data table-->
+    <div
+      v-if="error"
+      class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive text-sm"
+    >
+      {{ error }}
+    </div>
+
     <Card>
       <CardHeader>
         <CardTitle class="flex items-center gap-2 text-sm font-medium">
@@ -84,14 +96,29 @@ const handleEditConfig = (name: string) => console.log('Edit config for:', name)
                 </Badge>
               </TableCell>
               <TableCell>
-                <Button variant="ghost" size="sm" @click="handleEditConfig(site.name)">
+                <Button variant="ghost" size="sm" @click="show(site)">
                   <Settings class="h-4 w-4 mr-1" /> Edit
                 </Button>
+              </TableCell>
+            </TableRow>
+
+            <TableRow v-if="websites.length === 0 && !loading">
+              <TableCell colspan="4" class="text-center text-muted-foreground py-6">
+                <Ban class="h-4 w-4 inline mr-2" />
+                No websites found
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </CardContent>
     </Card>
+
+    <NginxConfigEditor
+      :website="editingWebsite"
+      :content="configContent"
+      :loading="loading"
+      @save="(content: string) => update(content)"
+      @close="closeEditor"
+    />
   </div>
 </template>
