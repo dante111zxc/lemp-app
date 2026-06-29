@@ -75,17 +75,20 @@ export const useNginx = () => {
   }
 
   const update = async (content: string) => {
-    if (!editingWebsite.value) return
+    if (!editingWebsite.value) return { ok: false, message: '' }
     try {
       acting.value = true
       error.value = null
-      await invoke('write_nginx_config', {
+      const msg = await invoke<string>('write_nginx_config', {
         filePath: editingWebsite.value.file_path,
         content,
       })
       configContent.value = content
+      return { ok: true, message: msg }
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to save config'
+      const message = err instanceof Error ? err.message : 'Failed to save config'
+      error.value = message
+      return { ok: false, message }
     } finally {
       acting.value = false
     }

@@ -6,6 +6,7 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar'
 import AppSidebar from '@/layouts/AppSidebar.vue'
+import { Toaster } from 'vue-sonner'
 
 useTheme()
 </script>
@@ -25,4 +26,5 @@ useTheme()
       </div>
     </SidebarInset>
   </SidebarProvider>
+  <Toaster position="bottom-right" rich-colors />
 </template>

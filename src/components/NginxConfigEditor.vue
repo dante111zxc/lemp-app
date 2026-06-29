@@ -17,7 +17,6 @@ const emit = defineEmits<{
 }>()
 
 const editorContent = ref(props.content)
-const isSaving = ref(false)
 
 watch(
   () => props.content,
@@ -27,11 +26,7 @@ watch(
 )
 
 const handleSave = () => {
-  isSaving.value = true
   emit('save', editorContent.value)
-  setTimeout(() => {
-    isSaving.value = false
-  }, 1000)
 }
 
 const handleClose = () => {
@@ -80,8 +75,8 @@ const handleClose = () => {
 
         <div class="flex justify-end gap-2 px-4 py-2 border-t">
           <Button variant="outline" @click="handleClose">Cancel</Button>
-          <Button @click="handleSave" :disabled="isSaving">
-            <LoaderCircle v-if="isSaving" class="h-4 w-4 mr-1 animate-spin" />
+          <Button @click="handleSave" :disabled="loading">
+            <LoaderCircle v-if="loading" class="h-4 w-4 mr-1 animate-spin" />
             Save
           </Button>
         </div>

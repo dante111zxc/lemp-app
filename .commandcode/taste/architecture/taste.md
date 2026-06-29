@@ -5,3 +5,4 @@
 - Focus on tauri::SystemTray for the native macOS menu bar experience. Confidence: 0.85
 - Use Tauri's event system (AppHandle::emit) for real-time monitoring instead of frontend polling with setInterval + invoke. Confidence: 0.65
 - For macOS Homebrew Nginx installations, include /opt/homebrew/etc/nginx/servers in common_roots path lookups. Confidence: 0.70
+- Place Nginx-specific functions (read/write config) in services/nginx_service.rs; reserve commands/config_manager.rs for shared/general-purpose utilities only. Confidence: 0.70

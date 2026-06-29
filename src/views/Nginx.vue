@@ -18,6 +18,7 @@ import ButtonStop from '@/components/ButtonStop.vue'
 import ButtonRestart from '@/components/ButtonRestart.vue'
 import NginxConfigEditor from '@/components/NginxConfigEditor.vue'
 import { useNginx } from '@/composables/useNginx'
+import { toast } from 'vue-sonner'
 const {
   nginxRes,
   websites,
@@ -32,6 +33,16 @@ const {
   update,
   closeEditor,
 } = useNginx()
+
+const handleSave = async (content: string) => {
+  const result = await update(content)
+  if (result.ok) {
+    toast.success(result.message)
+    closeEditor()
+  } else {
+    toast.error(result.message || 'Failed to save config')
+  }
+}
 </script>
 
 <template>
@@ -48,7 +59,7 @@ const {
       <div class="flex gap-2">
         <ServiceStatus
           v-if="nginxRes?.data.status !== EnumServiceStatus.NOT_INSTALLED"
-          :status="nginxRes?.data.status as number"
+          :status="Number(nginxRes?.data.status)"
         />
 
         <template v-if="nginxRes?.data.status === EnumServiceStatus.RUNNING">
@@ -117,7 +128,7 @@ const {
       :website="editingWebsite"
       :content="configContent"
       :loading="loading"
-      @save="(content: string) => update(content)"
+      @save="(content: string) => handleSave(content)"
       @close="closeEditor"
     />
   </div>

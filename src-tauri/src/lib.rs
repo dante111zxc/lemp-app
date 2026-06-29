@@ -15,11 +15,12 @@ pub fn run() {
             commands::hardware_control::get_hardware_info,
             commands::nginx_control::get_nginx_status,
             commands::nginx_control::get_list_websites,
+            commands::nginx_control::read_nginx_config,
+            commands::nginx_control::write_nginx_config,
+            commands::nginx_control::test_nginx_config,
             commands::nginx_control::start_nginx,
             commands::nginx_control::stop_nginx,
             commands::nginx_control::restart_nginx,
-            commands::config_manager::read_nginx_config,
-            commands::config_manager::write_nginx_config,
         ])
         .setup(|app| {
             let handle = app.handle().clone();
