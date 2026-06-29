@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import type { SystemInfo } from '@/types/system'
 
@@ -13,6 +13,7 @@ export const useSystemInfo = (refreshInterval = 5000) => {
     try {
       const info = await invoke<SystemInfo>('get_hardware_info')
       systemInfo.value = info
+
       error.value = null
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch system info'
@@ -21,6 +22,18 @@ export const useSystemInfo = (refreshInterval = 5000) => {
       loading.value = false
     }
   }
+
+  const cpuMhz = computed(() => {
+    if (!systemInfo.value?.cpus) {
+      return 0
+    }
+    return (
+      systemInfo.value.cpus.reduce(
+        (accumulator, currentItem) => accumulator + currentItem.frequency_mhz,
+        0
+      ) / systemInfo.value.total_core
+    )
+  })
 
   const startAutoRefresh = () => {
     if (intervalId) return
@@ -50,5 +63,6 @@ export const useSystemInfo = (refreshInterval = 5000) => {
     refresh: fetchSystemInfo,
     startAutoRefresh,
     stopAutoRefresh,
+    cpuMhz,
   }
 }

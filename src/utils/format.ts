@@ -9,3 +9,11 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
+
+export const formatCpuFrequency = (mhz: number) => {
+  if (mhz >= 1000) {
+    return `${(mhz / 1000).toFixed(2)}`
+  }
+
+  return `${mhz.toFixed(2)}`
+}

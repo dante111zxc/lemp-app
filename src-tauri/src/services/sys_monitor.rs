@@ -64,6 +64,7 @@ impl SystemMonitor {
             logical_cores,
             total_core,
             cpu_brand,
+            
         }
     }
 }

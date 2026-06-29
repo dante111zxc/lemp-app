@@ -20,5 +20,5 @@ pub struct HardwareInfo {
     pub total_core: usize,
     pub cpu_brand: String,
     pub cpu_architecture: String,
-    pub total_cpu_usage: f32
+    pub total_cpu_usage: f32,
 }

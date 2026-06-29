@@ -1,7 +1,7 @@
 export interface SystemInfo {
   os_name: string
   os_version: string
-  total_memory_gb: string
+  total_memory_gb: number
   used_memory_gb: number
   cpu_usage: number
   cpus: {
