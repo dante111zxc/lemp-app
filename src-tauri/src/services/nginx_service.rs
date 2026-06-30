@@ -136,16 +136,15 @@ impl NginxService {
     fn run_elevated_command(action: &str) -> Result<String, String> {
         let os = env::consts::OS;
 
+        match action {
+            "start"|"stop"|"restart" => {}
+            _ => return Err("Invalid action".into())
+        }
+
         let output = if os == "macos" {
-            // === Trên macOS ===
-            // Sử dụng AppleScript thông qua osascript để ép hệ thống bật hộp thoại Touch ID / Password.
-            // Câu lệnh mẫu: osascript -e 'do shell script "brew services start nginx" with administrator privileges'
-            let script = format!("do shell script \"brew services {} nginx\" with administrator privileges", action);
-            
-            Command::new("osascript")
-                .arg("-e")
-                .arg(script)
-                .output()
+            Command::new("brew")
+            .args(["services", action, "nginx"])
+            .output()
 
         } else if os == "linux" {
             // === Trên Linux ===
@@ -290,7 +289,7 @@ impl NginxService {
                 String::from("/var/www/html")
             };
 
-            let enabled = file_path.contains("sites-enabled") || file_path.contains("conf.d");
+            let enabled = file_path.contains("sites-enabled") || file_path.contains("conf.d") || file_path.contains("servers");
 
             websites.push(Website {
                 name: domain,
@@ -337,13 +336,19 @@ impl NginxService {
     }
 
     pub fn is_running () -> bool {
-        let os = env::consts::OS;
+        let os: &str = env::consts::OS;
         if os == "linux" {
             if let Ok(st) = Command::new("systemctl").args(&["is-active", "--quiet", "nginx"]).status() {
                 if st.success() { return true; }
             }
         }
         // Fallback pgrep cho cả macos và linux
-        Command::new("pgrep").args(&["-x", "nginx"]).output().map(|out| out.status.success()).unwrap_or(false)
+        Command::new("pgrep")
+            .arg("nginx")
+            .stdout(std::process::Stdio::null()) 
+            .stderr(std::process::Stdio::null())
+            .status()                          
+            .map(|status| status.success())
+            .unwrap_or(false)
     }
 }
